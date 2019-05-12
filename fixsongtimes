@@ -1,0 +1,40 @@
+#!/bin/zsh
+#
+# Change the access and modification times of all files in a dir to match the dir
+# Useful for making all MP3 files match their parent (yay Foobar2000)
+#
+
+usage() 
+{
+	print "Usage:"
+	print "\-d	Directory to decend from"
+	exit 1
+}
+
+parse_options()
+{
+	if [ "$#" -ne 2 ]; then
+		usage
+	fi
+
+	OPTIND=1
+	OPTERR=0
+
+	while getopts ":d:" opt; do
+		case $opt in
+			d)
+				STARTDIR=$OPTARG
+				;;
+			\?)
+				usage
+				;;
+		esac
+	done
+}
+
+parse_options $*
+
+NEWDIR=$(readlink -f ${STARTDIR})
+echo "Updating files in" ${NEWDIR}
+
+find ${NEWDIR} -type f -print0 | while IFS= read -r -d '' file; do DIR=`dirname $file`; touch -r $DIR $file;done
